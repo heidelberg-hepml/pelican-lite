@@ -9,15 +9,17 @@ Before using the package, install it via pip:
 
 .. code-block:: bash
 
-   pip install pelican-hep
+   pip install pelican-lite
 
 Alternatively, if you're developing locally:
 
 .. code-block:: bash
 
-   git clone https://github.com/heidelberg-hepml/pelican.git
+   git clone https://github.com/heidelberg-hepml/pelican-lite.git
    cd pelican
    pip install -e .
+   pip install -r requirements.txt
+   pre-commit install
 
 0. Generate particle data
 -------------------------

@@ -1,5 +1,5 @@
-PELICAN documentation
-=====================
+PELICAN-lite documentation
+==========================
 
 This is an efficient reimplementation of the PELICAN architecture.
 PELICAN was first published at the `ML4PS workshop 2022 <https://arxiv.org/abs/2211.00454>`_ and on `JHEP <https://arxiv.org/abs/2307.16506>`_.
@@ -7,7 +7,7 @@ The official implementation is available on https://github.com/abogatskiy/PELICA
 
 This implementation aims to improve efficiency and ease of use.
 For toptagging with batch size 100, we find 8x reduced memory usage and a 3x training speedup compared to the original implementation.
-PELICAN can be used as the Frames-Net in `Lorentz Local Canonicalization (LLoCa) <https://github.com/heidelberg-hepml/lloca>`_.
+PELICAN-lite can be used as the Frames-Net in `Lorentz Local Canonicalization (LLoCa) <https://github.com/heidelberg-hepml/lloca>`_.
 
 * :doc:`quickstart`
 * :doc:`differences`

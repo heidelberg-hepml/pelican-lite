@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
 
-project = "Efficient PELICAN"
+project = "PELICAN-lite"
 copyright = "2025, Jonas Spinner"
 author = "Jonas Spinner"
 
