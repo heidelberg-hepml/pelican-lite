@@ -1,6 +1,5 @@
 import pytest
 import torch
-from .utils import generate_batch, permute_single_graph
 
 from pelican.primitives import (
     aggregate_0to2,
@@ -9,6 +8,8 @@ from pelican.primitives import (
     aggregate_2to1,
     aggregate_2to2,
 )
+
+from .utils import generate_batch, permute_single_graph
 
 
 @pytest.mark.parametrize("reduce", ["sum", "prod", "mean", "amax", "amin"])
@@ -49,7 +50,7 @@ def test_shape(aggregator, in_rank, out_rank, reduce):
 )
 def test_permutation_equivariance(aggregator, in_rank, out_rank, reduce):
     # only test permutation equivariance on single graphs for simplicity
-    batch, edge_index, graph, nodes, edges = generate_batch(G=1, N_range=[2, 3], C=1)
+    batch, edge_index, graph, nodes, edges = generate_batch(G=1, N_min=2, N_max=3, C=1)
     G = batch[-1].item() + 1
 
     # path 1: first aggregate, then permute

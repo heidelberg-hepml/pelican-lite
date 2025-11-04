@@ -1,15 +1,17 @@
-import pytest
 import math
-from .utils import generate_batch
+
+import pytest
 
 from pelican.layers import (
-    Aggregator2to2,
-    Aggregator2to1,
-    Aggregator2to0,
-    Aggregator1to2,
     Aggregator0to2,
+    Aggregator1to2,
+    Aggregator2to0,
+    Aggregator2to1,
+    Aggregator2to2,
     PELICANBlock,
 )
+
+from .utils import generate_batch
 
 
 @pytest.mark.parametrize("aggr", ["sum", "prod", "mean", "amax", "amin"])
@@ -56,9 +58,7 @@ def test_shape_aggregator(
 
 
 @pytest.mark.parametrize("aggr", ["sum", "prod", "mean", "amax", "amin"])
-@pytest.mark.parametrize(
-    "activation", ["relu", "gelu", "leaky_relu", "tanh", "sigmoid", "silu"]
-)
+@pytest.mark.parametrize("activation", ["relu", "gelu", "leaky_relu", "tanh", "sigmoid", "silu"])
 @pytest.mark.parametrize("map_multipliers", [True, False])
 @pytest.mark.parametrize("factorize", [True, False])
 @pytest.mark.parametrize(

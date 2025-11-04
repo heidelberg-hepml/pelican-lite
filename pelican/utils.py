@@ -1,4 +1,5 @@
 """Utility functions for handling batch and pointer representations."""
+
 import torch
 
 
@@ -97,9 +98,7 @@ def get_edge_index_from_ptr(ptr, shape, remove_self_loops=True):
     return edge_index
 
 
-def get_edge_index_from_shape(
-    shape, device=torch.device("cpu"), remove_self_loops=True
-):
+def get_edge_index_from_shape(shape, device=None, remove_self_loops=True):
     """Construct edge index of fully connected graph from the shape of a corresponding dense tensor.
     This function should be used for graphs represented by dense tensors,
     i.e. graphs where the number of nodes per graph is fixed.
@@ -120,6 +119,8 @@ def get_edge_index_from_shape(
         A tensor of shape (2, E) where E is the number of edges, representing the edge index.
     """
     B, N, _ = shape
+    if device is None:
+        device = torch.device("cpu")
 
     nodes = torch.arange(N, device=device)
 

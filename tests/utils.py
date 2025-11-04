@@ -3,7 +3,7 @@ import torch
 from pelican.utils import get_batch_from_ptr, get_edge_index_from_ptr
 
 
-def generate_batch(G=8, N_range=[10, 20], C=16, batch=None, edge_index=None):
+def generate_batch(G=8, N_min=10, N_max=20, C=16, batch=None, edge_index=None):
     """
     Generate random batch, edge_index, graph, nodes, and edges for testing,
     assuming a fully connected graph.
@@ -35,7 +35,7 @@ def generate_batch(G=8, N_range=[10, 20], C=16, batch=None, edge_index=None):
         Edge-level features of shape (G, E).
     """
     if batch is None or edge_index is None:
-        length = torch.randint(low=N_range[0], high=N_range[1], size=(G,))
+        length = torch.randint(low=N_min, high=N_max, size=(G,))
         ptr = torch.zeros(G + 1, dtype=torch.long)
         ptr[1:] = torch.cumsum(length, dim=0)
         batch = get_batch_from_ptr(ptr)
@@ -49,9 +49,7 @@ def generate_batch(G=8, N_range=[10, 20], C=16, batch=None, edge_index=None):
     return batch, edge_index, graph, nodes, edges
 
 
-def permute_single_graph(
-    edge_index, graph=None, nodes=None, edges=None, permutation=None
-):
+def permute_single_graph(edge_index, graph=None, nodes=None, edges=None, permutation=None):
     # this code assumes a single graph (G=1)
     N = edge_index.max().item() + 1
     if permutation is None:

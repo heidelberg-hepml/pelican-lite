@@ -1,4 +1,5 @@
 """PELICAN network architecture."""
+
 import torch
 from torch import nn
 from torch.utils.checkpoint import checkpoint
@@ -6,9 +7,9 @@ from torch.utils.checkpoint import checkpoint
 from .layers import (
     Aggregator0to2,
     Aggregator1to2,
-    Aggregator2to2,
-    Aggregator2to1,
     Aggregator2to0,
+    Aggregator2to1,
+    Aggregator2to2,
     PELICANBlock,
 )
 
@@ -77,9 +78,7 @@ class PELICAN(nn.Module):
             Whether to use gradient checkpointing for PELICAN blocks to save memory. Default is False.
         """
         super().__init__()
-        layer_kwargs = dict(
-            factorize=factorize, map_multipliers=map_multipliers, aggr=aggr
-        )
+        layer_kwargs = dict(factorize=factorize, map_multipliers=map_multipliers, aggr=aggr)
 
         # embed inputs into edge features
         self.in_aggregator_rank1 = (
@@ -180,7 +179,9 @@ class PELICAN(nn.Module):
             Output features of shape (G, out_channels) for out_rank=0, (N, out_channels) for out_rank=1, or (E, out_channels) for out_rank=2.
         """
         if num_graphs is None:
-            assert not self.compile, "num_graphs must be provided when model is compiled, otherwise the .item() call breaks the computational graph, slowing down the compiled code."
+            assert (
+                not self.compile
+            ), "num_graphs must be provided when model is compiled, otherwise the .item() call breaks the computational graph, slowing down the compiled code."
             num_graphs = batch[-1].item() + 1
 
         # embed inputs into edge features

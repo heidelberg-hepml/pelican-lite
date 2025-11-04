@@ -1,9 +1,11 @@
-import pytest
 import math
+
+import pytest
 import torch
-from .utils import generate_batch, permute_single_graph
 
 from pelican.nets import PELICAN
+
+from .utils import generate_batch, permute_single_graph
 
 
 def run_shape_test(
@@ -22,12 +24,8 @@ def run_shape_test(
     compile=False,
 ):
     batch, edge_index, graph, _, _ = generate_batch(C=in_channels_rank0)
-    _, _, _, nodes, _ = generate_batch(
-        C=in_channels_rank1, batch=batch, edge_index=edge_index
-    )
-    _, _, _, _, edges = generate_batch(
-        C=in_channels_rank2, batch=batch, edge_index=edge_index
-    )
+    _, _, _, nodes, _ = generate_batch(C=in_channels_rank1, batch=batch, edge_index=edge_index)
+    _, _, _, _, edges = generate_batch(C=in_channels_rank2, batch=batch, edge_index=edge_index)
     G = batch[-1].item() + 1
     N = batch.size(0)
     E = edge_index.size(1)
@@ -58,9 +56,7 @@ def run_shape_test(
     assert out.shape == (out_objs, out_channels)
 
 
-@pytest.mark.parametrize(
-    "hidden_channels,increase_hidden_channels", [(16, 1), (7, math.pi)]
-)
+@pytest.mark.parametrize("hidden_channels,increase_hidden_channels", [(16, 1), (7, math.pi)])
 @pytest.mark.parametrize("num_blocks", [0, 1, 3])
 @pytest.mark.parametrize(
     "in_channels_rank0,in_channels_rank1,in_channels_rank2",
@@ -103,9 +99,7 @@ def test_shape(
     )
 
 
-@pytest.mark.parametrize(
-    "hidden_channels,increase_hidden_channels", [(16, 1), (7, math.pi)]
-)
+@pytest.mark.parametrize("hidden_channels,increase_hidden_channels", [(16, 1), (7, math.pi)])
 @pytest.mark.parametrize("num_blocks", [0, 1, 3])
 @pytest.mark.parametrize(
     "in_channels_rank0,in_channels_rank1,in_channels_rank2",
@@ -128,12 +122,8 @@ def test_permutation_equivariance(
 ):
     # only test permutation equivariance on single graphs for simplicity
     batch, edge_index, graph, _, _ = generate_batch(C=in_channels_rank0, G=1)
-    _, _, _, nodes, _ = generate_batch(
-        C=in_channels_rank1, batch=batch, edge_index=edge_index
-    )
-    _, _, _, _, edges = generate_batch(
-        C=in_channels_rank2, batch=batch, edge_index=edge_index
-    )
+    _, _, _, nodes, _ = generate_batch(C=in_channels_rank1, batch=batch, edge_index=edge_index)
+    _, _, _, _, edges = generate_batch(C=in_channels_rank2, batch=batch, edge_index=edge_index)
     G = batch[-1].item() + 1
 
     net = PELICAN(

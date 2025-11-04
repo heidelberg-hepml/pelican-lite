@@ -1,10 +1,10 @@
-import torch
 import pytest
+import torch
 
 from pelican.utils import (
+    get_batch_from_ptr,
     get_edge_index_from_ptr,
     get_edge_index_from_shape,
-    get_batch_from_ptr,
     get_ptr_from_batch,
 )
 

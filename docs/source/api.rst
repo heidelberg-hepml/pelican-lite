@@ -16,7 +16,7 @@ Permutation-equivariant layers
 .. autosummary::
    :toctree: generated/
    :recursive:
-   
+
    pelican.layers.PELICANBlock
    pelican.layers.Aggregator2to2
    pelican.layers.Aggregator2to1

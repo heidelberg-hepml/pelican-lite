@@ -1,14 +1,15 @@
 """Layers for PELICAN architecture."""
+
 import torch
 from torch import nn
 
 from .primitives import (
-    bell_number,
     aggregate_0to2,
     aggregate_1to2,
     aggregate_2to0,
     aggregate_2to1,
     aggregate_2to2,
+    bell_number,
 )
 
 ACTIVATION = {
@@ -64,9 +65,7 @@ class GeneralAggregator(nn.Module):
         self.aggregator = aggregator
         self.factorize = factorize
 
-        self.map_multipliers = (
-            nn.Parameter(torch.ones(self.num_maps)) if map_multipliers else None
-        )
+        self.map_multipliers = nn.Parameter(torch.ones(self.num_maps)) if map_multipliers else None
 
         if factorize:
             self.coeffs00 = nn.Parameter(torch.empty(in_channels, self.num_maps))
@@ -78,9 +77,7 @@ class GeneralAggregator(nn.Module):
             nn.init.kaiming_uniform_(self.coeffs10, nonlinearity="linear")
             nn.init.kaiming_uniform_(self.coeffs11, nonlinearity="linear")
         else:
-            self.coeffs_direct = nn.Parameter(
-                torch.empty(in_channels, out_channels, self.num_maps)
-            )
+            self.coeffs_direct = nn.Parameter(torch.empty(in_channels, out_channels, self.num_maps))
             nn.init.kaiming_uniform_(self.coeffs_direct, nonlinearity="relu")
 
     @property
@@ -188,9 +185,7 @@ class PELICANBlock(nn.Module):
         linear_in = nn.Linear(hidden_channels, hidden_channels_2)
         self.activation = ACTIVATION[activation]
         norm = nn.RMSNorm(normalized_shape=hidden_channels_2)
-        dropout = (
-            nn.Dropout(p=dropout_prob) if dropout_prob is not None else nn.Identity()
-        )
+        dropout = nn.Dropout(p=dropout_prob) if dropout_prob is not None else nn.Identity()
         self.mlp = nn.ModuleList([linear_in, self.activation, norm, dropout])
 
         self.aggregator = Aggregator2to2(
