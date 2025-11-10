@@ -1,0 +1,6 @@
+﻿pelican.primitives.aggregate\_2to2
+==================================
+
+.. currentmodule:: pelican.primitives
+
+.. autofunction:: aggregate_2to2

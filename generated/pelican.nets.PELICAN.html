@@ -1,0 +1,188 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pelican.nets.PELICAN &mdash; PELICAN-lite  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pelican.layers.PELICANBlock" href="pelican.layers.PELICANBlock.html" />
+    <link rel="prev" title="API Reference" href="../api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PELICAN-lite
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../differences.html">Differences compared to the original PELICAN implementation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#pelican-network">PELICAN Network</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">pelican.nets.PELICAN</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pelican.nets.PELICAN"><code class="docutils literal notranslate"><span class="pre">PELICAN</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#permutation-equivariant-layers">Permutation-equivariant layers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#permutation-equivariant-aggregators">Permutation-equivariant aggregators</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PELICAN-lite</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+      <li class="breadcrumb-item active">pelican.nets.PELICAN</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/pelican.nets.PELICAN.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pelican-nets-pelican">
+<h1>pelican.nets.PELICAN<a class="headerlink" href="#pelican-nets-pelican" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pelican.nets.PELICAN">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pelican.nets.</span></span><span class="sig-name descname"><span class="pre">PELICAN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels_rank2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels_rank1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels_rank0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_rank</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_blocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increase_hidden_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_multipliers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factorize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'leaky_relu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_blocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pelican/nets.html#PELICAN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pelican.nets.PELICAN" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>PELICAN network.</p>
+<p>PELICAN stands for Permutation Equivariant and Lorentz Invariant or Covariant Aggregator Network.
+PELICAN takes input of varying rank (0, 1, or 2), projects them onto rank 2 objects (edges),
+processes them with multiple PELICANBlock, and extracts output of varying rank (0, 1, or 2).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels_rank2</strong> (<em>int</em>) – Edge-level input features (rank 2). Can be zero.</p></li>
+<li><p><strong>in_channels_rank1</strong> (<em>int</em>) – Node-level input features (rank 1). Can be zero.</p></li>
+<li><p><strong>in_channels_rank0</strong> (<em>int</em>) – Graph-level input features (rank 0). Can be zero.</p></li>
+<li><p><strong>out_rank</strong> (<em>int</em>) – Rank of the output features (0, 1, or 2).</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – Number of output channels.</p></li>
+<li><p><strong>num_blocks</strong> (<em>int</em>) – Number of PELICAN blocks.</p></li>
+<li><p><strong>hidden_channels</strong> (<em>int</em>) – Number of hidden channels.</p></li>
+<li><p><strong>increase_hidden_channels</strong> (<em>float</em>) – Factor to increase hidden channels in the feedforward network. Default is 1.0.</p></li>
+<li><p><strong>map_multipliers</strong> (<em>bool</em>) – Whether to use learnable multipliers for each aggregation map. Default is True.</p></li>
+<li><p><strong>factorize</strong> (<em>bool</em>) – Whether to use factorized linear layers in the feedforward network. Default is False.</p></li>
+<li><p><strong>activation</strong> (<em>str</em>) – Activation function to use (‘gelu’, ‘relu’, ‘leaky_relu’, ‘tanh’, ‘sigmoid’, ‘silu’), by default ‘leaky_relu’.</p></li>
+<li><p><strong>dropout_prob</strong> (<em>float</em>) – Dropout probability in the feedforward network, by default None (no dropout).</p></li>
+<li><p><strong>aggr</strong> (<em>str</em>) – Aggregation method to use (‘mean’, ‘sum’, ‘prod’, ‘amin’, ‘amax’), by default ‘mean’.</p></li>
+<li><p><strong>compile</strong> (<em>bool</em>) – Whether to compile the model with torch.compile. Default is False.
+Compiling the model leads to significant speedups on GPU, because the aggregation functions involve many small operations that otherwise require many individual kernel launches.
+It is recommended to run <code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">torch.compile(model,</span> <span class="pre">**kwargs)</span></code> outside of the constructor, however we provide this option for convenience.
+Note: When compile=True, the model requires the num_graphs argument in the forward pass to avoid a graph break.</p></li>
+<li><p><strong>checkpoint_blocks</strong> (<em>bool</em>) – Whether to use gradient checkpointing for PELICAN blocks to save memory. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pelican.nets.PELICAN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_rank2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_rank1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_rank0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_graphs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pelican/nets.html#PELICAN.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pelican.nets.PELICAN.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edge_index</strong> (<em>torch.Tensor</em>) – Edge index tensor of shape (2, E).</p></li>
+<li><p><strong>batch</strong> (<em>torch.Tensor</em>) – Batch tensor of shape (N).</p></li>
+<li><p><strong>in_rank2</strong> (<em>torch.Tensor</em>) – Edge-level input features of shape (E, in_channels_rank2), by default None.</p></li>
+<li><p><strong>in_rank1</strong> (<em>torch.Tensor</em>) – Node-level input features of shape (N, in_channels_rank1), by default None.</p></li>
+<li><p><strong>in_rank0</strong> (<em>torch.Tensor</em>) – Graph-level input features of shape (G, in_channels_rank0), by default None.</p></li>
+<li><p><strong>num_graphs</strong> (<em>int</em>) – The number of graphs G in the batch, also known as batch size.
+If None, it will be inferred from the batch tensor.
+Inferring this number from the batch tensor requires a GPU/CPU synchronization,
+which slows down the code when running on GPU.
+Currently, the code requires the num_graphs argument in case compile=True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> – Output features of shape (G, out_channels) for out_rank=0, (N, out_channels) for out_rank=1, or (E, out_channels) for out_rank=2.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../api.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pelican.layers.PELICANBlock.html" class="btn btn-neutral float-right" title="pelican.layers.PELICANBlock" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jonas Spinner.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
