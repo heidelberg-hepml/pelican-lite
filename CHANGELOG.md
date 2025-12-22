@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 22.12.2025
+
+### Changed
+
+- Update formatting and docs settings
+
+### Fixed
+
+- Small change to make dynamic versioning work after the package rename
+
+## [1.1.2] - 10.11.2025
+
+_Fix package version._
+
+
 ## [1.1.1] - 10.11.2025
 
 _Fix package version._
