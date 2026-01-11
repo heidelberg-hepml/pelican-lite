@@ -29,8 +29,7 @@ or clone the repository and install the package in dev mode
 ```
 git clone https://github.com/heidelberg-hepml/pelican-lite.git
 cd pelican
-pip install -e .
-pip install -r requirements.txt
+pip install -e ".[dev]"
 pre-commit install
 ```
 
