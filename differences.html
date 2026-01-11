@@ -1,0 +1,163 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Differences compared to the original PELICAN implementation &mdash; PELICAN-lite  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PELICAN-lite
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Differences compared to the original PELICAN implementation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PELICAN-lite</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Differences compared to the original PELICAN implementation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/differences.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="differences-compared-to-the-original-pelican-implementation">
+<h1>Differences compared to the original PELICAN implementation<a class="headerlink" href="#differences-compared-to-the-original-pelican-implementation" title="Link to this heading"></a></h1>
+<p>We summarize the key differences and design choices that went into this implementation,
+compared to the original PELICAN implementation available on <a class="reference external" href="https://github.com/abogatskiy/PELICAN">https://github.com/abogatskiy/PELICAN</a>.</p>
+<section id="efficiency-improvements">
+<h2>Efficiency improvements<a class="headerlink" href="#efficiency-improvements" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Sparse tensors: For batches that contain graphs with different node counts,
+the original PELICAN implementation uses zero-padding to create dense tensors,
+i.e. rectangular objects of shape (B, Nmax, C) for batch size B, C channels,
+and Nmax the maximum node count of a graph in the full batch.
+Even though they do not contribute to the final result, all operations have to
+be performed also on the padded entries, which becomes costly espacially at large
+batch sizes. In this implementation, we avoid zero-padding and instead use sparse
+tensors, which have shape (Nbatch, C) with Nbatch the total number of nodes in the
+batch, summing over the nodes of all graphs. To keep track of which nodes belong to
+which graph, we use a <code class="docutils literal notranslate"><span class="pre">batch</span></code> vector of shape (Nbatch,) that contains the graph
+index of each node. Alternatively, one can use a <code class="docutils literal notranslate"><span class="pre">ptr</span></code> vector of shape (B+1,)
+that contains the indices where the first, second etc graph starts in the sparse tensor.
+Following the PyTorch Geometric convention, we also support a <code class="docutils literal notranslate"><span class="pre">edge_index</span></code> tensor
+that contains the list of edges in the graph. To estimate the memory savings from using
+sparse tensors, consider a batch of B=100 jets with on average 50 particles per jet,
+but ranging up to Nmax=100. Using sparse tensors saves roughly a factor of 2 in memory
+when storing node tensors, and roughly a factor of 2*2=4 when storing edge tensors.
+Using the top-tagging dataset, we find a 8x reduced memory cost for batch size B=100.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>: The aggregations in PELICAN require many sequential operations. Fusing
+them into a single operation using <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> can therefore lead to significant speedups.
+We find this to be particularly important when using sparse tensors, where less high-level kernels are available.
+When training on the top-tagging dataset with B=1 using a H100 GPU, we find that our <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>’d implementation
+is roughly 2x faster than the original PELICAN, whereas the non-<code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>’d version is roughly 50% slower.
+Note that at B=1 our implementation does not benefit yet from the speedup from memory savings.
+Going to B=100, we find that our <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>’d implementation is roughly 3x faster, whereas the
+non-<code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>’d version is roughly 20% slower than the original PELICAN.</p></li>
+</ul>
+</section>
+<section id="design-choices">
+<h2>Design choices<a class="headerlink" href="#design-choices" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>We use RMSNorm instead of BatchNorm. This is because BatchNorm can lead to instabilities
+when the batch size is small, or when the node count per graph varies strongly.
+RMSNorm is a simpler normalization that does not depend on the batch statistics.</p></li>
+<li><p>The official PELICAN implementation supports a range of additional options, e.g. IRC safety,
+<code class="docutils literal notranslate"><span class="pre">folklore</span></code>, <code class="docutils literal notranslate"><span class="pre">skip_order_zero</span></code>. We do not support these options in this implementation
+to keep the code base simple and focused on the core architecture.</p></li>
+<li><p>Our implementation of channel-wise rescalings differs slightly from the original PELICAN.
+The official implementation rescales aggregation maps by <span class="math notranslate nohighlight">\(1/N^\alpha\)</span>, where N
+is the number of nodes in the graph, and <span class="math notranslate nohighlight">\(\alpha\)</span> is a learnable parameter.
+In our implementation, the scaling factor is learned directly.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jonas Spinner.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

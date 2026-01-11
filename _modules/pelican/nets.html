@@ -1,0 +1,320 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pelican.nets &mdash; PELICAN-lite  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PELICAN-lite
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../differences.html">Differences compared to the original PELICAN implementation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PELICAN-lite</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pelican.nets</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pelican.nets</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;PELICAN network architecture.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.checkpoint</span><span class="w"> </span><span class="kn">import</span> <span class="n">checkpoint</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.layers</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Aggregator0to2</span><span class="p">,</span>
+    <span class="n">Aggregator1to2</span><span class="p">,</span>
+    <span class="n">Aggregator2to0</span><span class="p">,</span>
+    <span class="n">Aggregator2to1</span><span class="p">,</span>
+    <span class="n">Aggregator2to2</span><span class="p">,</span>
+    <span class="n">PELICANBlock</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="PELICAN">
+<a class="viewcode-back" href="../../generated/pelican.nets.PELICAN.html#pelican.nets.PELICAN">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PELICAN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PELICAN network.</span>
+
+<span class="sd">    PELICAN stands for Permutation Equivariant and Lorentz Invariant or Covariant Aggregator Network.</span>
+<span class="sd">    PELICAN takes input of varying rank (0, 1, or 2), projects them onto rank 2 objects (edges),</span>
+<span class="sd">    processes them with multiple PELICANBlock, and extracts output of varying rank (0, 1, or 2).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_channels_rank2</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">in_channels_rank1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">in_channels_rank0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">out_rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_blocks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">hidden_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">increase_hidden_channels</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">map_multipliers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">factorize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span>
+        <span class="n">dropout_prob</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">aggr</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+        <span class="nb">compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">checkpoint_blocks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_channels_rank2 : int</span>
+<span class="sd">            Edge-level input features (rank 2). Can be zero.</span>
+<span class="sd">        in_channels_rank1 : int</span>
+<span class="sd">            Node-level input features (rank 1). Can be zero.</span>
+<span class="sd">        in_channels_rank0 : int</span>
+<span class="sd">            Graph-level input features (rank 0). Can be zero.</span>
+<span class="sd">        out_rank : int</span>
+<span class="sd">            Rank of the output features (0, 1, or 2).</span>
+<span class="sd">        out_channels : int</span>
+<span class="sd">            Number of output channels.</span>
+<span class="sd">        num_blocks : int</span>
+<span class="sd">            Number of PELICAN blocks.</span>
+<span class="sd">        hidden_channels : int</span>
+<span class="sd">            Number of hidden channels.</span>
+<span class="sd">        increase_hidden_channels : float</span>
+<span class="sd">            Factor to increase hidden channels in the feedforward network. Default is 1.0.</span>
+<span class="sd">        map_multipliers : bool</span>
+<span class="sd">            Whether to use learnable multipliers for each aggregation map. Default is True.</span>
+<span class="sd">        factorize : bool</span>
+<span class="sd">            Whether to use factorized linear layers in the feedforward network. Default is False.</span>
+<span class="sd">        activation : str</span>
+<span class="sd">            Activation function to use (&#39;gelu&#39;, &#39;relu&#39;, &#39;leaky_relu&#39;, &#39;tanh&#39;, &#39;sigmoid&#39;, &#39;silu&#39;), by default &#39;leaky_relu&#39;.</span>
+<span class="sd">        dropout_prob: float</span>
+<span class="sd">            Dropout probability in the feedforward network, by default None (no dropout).</span>
+<span class="sd">        aggr : str</span>
+<span class="sd">            Aggregation method to use (&#39;mean&#39;, &#39;sum&#39;, &#39;prod&#39;, &#39;amin&#39;, &#39;amax&#39;), by default &#39;mean&#39;.</span>
+<span class="sd">        compile : bool</span>
+<span class="sd">            Whether to compile the model with torch.compile. Default is False.</span>
+<span class="sd">            Compiling the model leads to significant speedups on GPU, because the aggregation functions involve many small operations that otherwise require many individual kernel launches.</span>
+<span class="sd">            It is recommended to run ``model = torch.compile(model, **kwargs)`` outside of the constructor, however we provide this option for convenience.</span>
+<span class="sd">            Note: When compile=True, the model requires the num_graphs argument in the forward pass to avoid a graph break.</span>
+<span class="sd">        checkpoint_blocks : bool</span>
+<span class="sd">            Whether to use gradient checkpointing for PELICAN blocks to save memory. Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">layer_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">factorize</span><span class="o">=</span><span class="n">factorize</span><span class="p">,</span> <span class="n">map_multipliers</span><span class="o">=</span><span class="n">map_multipliers</span><span class="p">,</span> <span class="n">aggr</span><span class="o">=</span><span class="n">aggr</span><span class="p">)</span>
+
+        <span class="c1"># embed inputs into edge features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_aggregator_rank1</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Aggregator1to2</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels_rank1</span><span class="p">,</span>
+                <span class="n">out_channels</span><span class="o">=</span><span class="n">in_channels_rank1</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">layer_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">in_channels_rank1</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_aggregator_rank0</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Aggregator0to2</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels_rank0</span><span class="p">,</span>
+                <span class="n">out_channels</span><span class="o">=</span><span class="n">in_channels_rank0</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">layer_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">in_channels_rank0</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+
+        <span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels_rank2</span> <span class="o">+</span> <span class="n">in_channels_rank1</span> <span class="o">+</span> <span class="n">in_channels_rank0</span>
+        <span class="k">assert</span> <span class="n">in_channels</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_aggregator_rank2</span> <span class="o">=</span> <span class="n">Aggregator2to2</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">hidden_channels</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">layer_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># process edge features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkpoint_blocks</span> <span class="o">=</span> <span class="n">checkpoint_blocks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">PELICANBlock</span><span class="p">(</span>
+                    <span class="n">hidden_channels</span><span class="o">=</span><span class="n">hidden_channels</span><span class="p">,</span>
+                    <span class="n">increase_hidden_channels</span><span class="o">=</span><span class="n">increase_hidden_channels</span><span class="p">,</span>
+                    <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">,</span>
+                    <span class="n">dropout_prob</span><span class="o">=</span><span class="n">dropout_prob</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">layer_kwargs</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># extract outputs from edge features</span>
+        <span class="n">out_aggregator_class</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">0</span><span class="p">:</span> <span class="n">Aggregator2to0</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="n">Aggregator2to1</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="n">Aggregator2to2</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_aggregator</span> <span class="o">=</span> <span class="n">out_aggregator_class</span><span class="p">[</span><span class="n">out_rank</span><span class="p">](</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">hidden_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">layer_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">compile</span> <span class="o">=</span> <span class="nb">compile</span>
+        <span class="k">if</span> <span class="nb">compile</span><span class="p">:</span>
+            <span class="c1"># ugly hack to make torch.compile convenient for users</span>
+            <span class="c1"># the clean solution is model = torch.compile(model, **kwargs) outside of the constructor</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="n">dynamic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fullgraph</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;default&quot;</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="PELICAN.forward">
+<a class="viewcode-back" href="../../generated/pelican.nets.PELICAN.html#pelican.nets.PELICAN.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">edge_index</span><span class="p">,</span>
+        <span class="n">batch</span><span class="p">,</span>
+        <span class="n">in_rank2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">in_rank1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">in_rank0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_graphs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        edge_index : torch.Tensor</span>
+<span class="sd">            Edge index tensor of shape (2, E).</span>
+<span class="sd">        batch : torch.Tensor</span>
+<span class="sd">            Batch tensor of shape (N).</span>
+<span class="sd">        in_rank2 : torch.Tensor</span>
+<span class="sd">            Edge-level input features of shape (E, in_channels_rank2), by default None.</span>
+<span class="sd">        in_rank1 : torch.Tensor</span>
+<span class="sd">            Node-level input features of shape (N, in_channels_rank1), by default None.</span>
+<span class="sd">        in_rank0 : torch.Tensor</span>
+<span class="sd">            Graph-level input features of shape (G, in_channels_rank0), by default None.</span>
+<span class="sd">        num_graphs : int</span>
+<span class="sd">            The number of graphs G in the batch, also known as batch size.</span>
+<span class="sd">            If None, it will be inferred from the batch tensor.</span>
+<span class="sd">            Inferring this number from the batch tensor requires a GPU/CPU synchronization,</span>
+<span class="sd">            which slows down the code when running on GPU.</span>
+<span class="sd">            Currently, the code requires the num_graphs argument in case compile=True.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out : torch.Tensor</span>
+<span class="sd">            Output features of shape (G, out_channels) for out_rank=0, (N, out_channels) for out_rank=1, or (E, out_channels) for out_rank=2.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">num_graphs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">compile</span>
+            <span class="p">),</span> <span class="s2">&quot;num_graphs must be provided when model is compiled, otherwise the .item() call breaks the computational graph, slowing down the compiled code.&quot;</span>
+            <span class="n">num_graphs</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># embed inputs into edge features</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_rank2</span><span class="p">]</span> <span class="k">if</span> <span class="n">in_rank2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">in_rank1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_aggregator_rank1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">edges_fromrank1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_aggregator_rank1</span><span class="p">(</span><span class="n">in_rank1</span><span class="p">,</span> <span class="n">edge_index</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
+            <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edges_fromrank1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">in_rank0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_aggregator_rank0</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">edges_fromrank0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_aggregator_rank0</span><span class="p">(</span><span class="n">in_rank0</span><span class="p">,</span> <span class="n">edge_index</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
+            <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edges_fromrank0</span><span class="p">)</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_aggregator_rank2</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">edge_index</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
+
+        <span class="c1"># process edge features</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">edge_index</span><span class="o">=</span><span class="n">edge_index</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="n">batch</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkpoint_blocks</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">use_reentrant</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">block</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># extract outputs from edge features</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_aggregator</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">edge_index</span><span class="o">=</span><span class="n">edge_index</span><span class="p">,</span> <span class="n">batch</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="n">num_graphs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jonas Spinner.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

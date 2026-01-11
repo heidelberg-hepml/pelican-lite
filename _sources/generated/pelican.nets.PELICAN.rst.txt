@@ -1,0 +1,8 @@
+﻿pelican.nets.PELICAN
+====================
+
+.. autoclass:: pelican.nets.PELICAN
+   :members:
+   :inherited-members: False
+   :undoc-members:
+   :show-inheritance:

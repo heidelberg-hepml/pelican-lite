@@ -1,0 +1,8 @@
+﻿pelican.layers.Aggregator2to0
+=============================
+
+.. autoclass:: pelican.layers.Aggregator2to0
+   :members:
+   :inherited-members: False
+   :undoc-members:
+   :show-inheritance:
